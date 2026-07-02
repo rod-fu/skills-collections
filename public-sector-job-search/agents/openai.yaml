@@ -1,0 +1,7 @@
+interface:
+  display_name: "Public Sector Job Search"
+  short_description: "Match resumes to verified China public-sector openings."
+  default_prompt: "Use $public-sector-job-search to search official public-sector job openings that match my resume."
+
+policy:
+  allow_implicit_invocation: true
