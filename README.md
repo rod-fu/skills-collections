@@ -1,10 +1,3 @@
-`public-sector-job-search` 是一个 Codex skill，用来根据简历或职业画像，搜索、核验并排序适合的编制岗位机会。
-
-它适合用来查找和筛选：
-
-- 编制考试岗位
-- 选调生岗位
-- 地方人才引进岗位
-- 官方招聘公告
+public-sector-job-search是一个 Codex skill，用来根据简历或职业画像，搜索、核验并排序适合的编制岗位机会。
 
 
