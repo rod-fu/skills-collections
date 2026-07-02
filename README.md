@@ -1,4 +1,5 @@
-public-sector-job-search 是一个用于匹配简历与体制内岗位机会的 Codex skill。
+public-sector-job-search 
+
 核心问题
 给定一份简历，哪些岗位真正值得投递？
 背景
