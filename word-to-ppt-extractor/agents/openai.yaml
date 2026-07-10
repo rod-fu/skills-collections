@@ -1,0 +1,4 @@
+interface:
+  display_name: "Word 转 PPT 提炼器"
+  short_description: "将 Word/长文提炼为高质量演示文稿素材与交付物"
+  default_prompt: "使用 $word-to-ppt-extractor 将这份 Word 文档提炼为符合 Huashu Design 规范的演示大纲、HTML 演示、PDF，并在需要时生成可编辑 PPTX。"

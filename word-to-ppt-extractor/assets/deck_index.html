@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>__DECK_TITLE__</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: oklch(13% 0.02 250); color: oklch(96% 0.02 90); }
+    body { font-family: Inter, "Noto Sans SC", "Microsoft YaHei", sans-serif; }
+    .stage { width: 100vw; height: 100vh; perspective: 1800px; display: grid; place-items: center; }
+    .wall { width: min(86vw, 1480px); height: min(78vh, 830px); position: relative; transform-style: preserve-3d; transition: transform 700ms cubic-bezier(.2,.8,.2,1); }
+    .frame { position: absolute; width: 34%; aspect-ratio: 16 / 9; border: 1px solid color-mix(in oklch, white, transparent 70%); background: #fff; overflow: hidden; box-shadow: 0 26px 80px rgb(0 0 0 / .38); cursor: pointer; transition: transform 500ms ease, filter 500ms ease; }
+    .frame iframe { width: 1920px; height: 1080px; border: 0; transform-origin: 0 0; pointer-events: none; }
+    .frame:hover { filter: brightness(1.08); }
+    .player { position: fixed; inset: 0; border: 0; width: 100vw; height: 100vh; background: #fff; display: none; }
+    .player.active { display: block; }
+    .toolbar { position: fixed; left: 24px; right: 24px; bottom: 22px; display: flex; justify-content: space-between; align-items: center; gap: 12px; z-index: 4; }
+    button { appearance: none; border: 1px solid color-mix(in oklch, white, transparent 72%); background: rgb(255 255 255 / .08); color: inherit; padding: 10px 14px; border-radius: 8px; font: inherit; cursor: pointer; backdrop-filter: blur(12px); }
+    .meta { font-size: 14px; color: color-mix(in oklch, white, transparent 35%); }
+    .title { position: fixed; top: 24px; left: 28px; z-index: 3; font-size: 18px; font-weight: 700; }
+    .hint { position: fixed; top: 24px; right: 28px; z-index: 3; font-size: 13px; color: color-mix(in oklch, white, transparent 42%); }
+  </style>
+</head>
+<body>
+  <div class="title">__DECK_TITLE__</div>
+  <div class="hint">点击页面开始演示，方向键翻页，Esc 返回概览</div>
+  <main class="stage">
+    <section id="wall" class="wall" aria-label="3D 概览墙"></section>
+  </main>
+  <iframe id="player" class="player" title="slide"></iframe>
+  <nav class="toolbar">
+    <button id="prev" type="button">上一页</button>
+    <div id="meta" class="meta"></div>
+    <button id="next" type="button">下一页</button>
+  </nav>
+  <script>
+    const MANIFEST = __MANIFEST_JSON__;
+    const wall = document.querySelector("#wall");
+    const player = document.querySelector("#player");
+    const meta = document.querySelector("#meta");
+    let current = 0;
+    let playing = false;
+
+    function layoutWall() {
+      wall.innerHTML = "";
+      const cols = Math.ceil(Math.sqrt(MANIFEST.length || 1));
+      const rows = Math.ceil((MANIFEST.length || 1) / cols);
+      MANIFEST.forEach((item, index) => {
+        const frame = document.createElement("article");
+        frame.className = "frame";
+        const col = index % cols;
+        const row = Math.floor(index / cols);
+        const x = (col - (cols - 1) / 2) * 38;
+        const y = (row - (rows - 1) / 2) * 28;
+        const z = -Math.abs(col - (cols - 1) / 2) * 38 - row * 10;
+        const r = (col - (cols - 1) / 2) * -8;
+        frame.style.transform = `translate3d(${x}vw, ${y}vh, ${z}px) rotateY(${r}deg)`;
+        frame.title = item.title;
+        const iframe = document.createElement("iframe");
+        iframe.src = item.src;
+        iframe.onload = () => {
+          const scale = frame.clientWidth / 1920;
+          iframe.style.transform = `scale(${scale})`;
+        };
+        frame.appendChild(iframe);
+        frame.addEventListener("click", () => openSlide(index));
+        wall.appendChild(frame);
+      });
+      updateMeta();
+    }
+
+    function openSlide(index) {
+      current = Math.max(0, Math.min(MANIFEST.length - 1, index));
+      playing = true;
+      player.src = MANIFEST[current].src;
+      player.classList.add("active");
+      updateMeta();
+      window.playDeckSfx?.();
+    }
+
+    function closeSlide() {
+      playing = false;
+      player.classList.remove("active");
+      player.src = "about:blank";
+      updateMeta();
+    }
+
+    function step(delta) {
+      if (!MANIFEST.length) return;
+      const next = Math.max(0, Math.min(MANIFEST.length - 1, current + delta));
+      if (playing) openSlide(next);
+      else {
+        current = next;
+        updateMeta();
+      }
+    }
+
+    function updateMeta() {
+      meta.textContent = MANIFEST.length ? `${current + 1} / ${MANIFEST.length} · ${MANIFEST[current].title}` : "暂无页面";
+    }
+
+    document.querySelector("#prev").addEventListener("click", () => step(-1));
+    document.querySelector("#next").addEventListener("click", () => step(1));
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeSlide();
+      if (event.key === "ArrowRight" || event.key === " ") step(1);
+      if (event.key === "ArrowLeft") step(-1);
+      if (event.key === "Enter" && !playing) openSlide(current);
+    });
+
+    layoutWall();
+  </script>
+</body>
+</html>
